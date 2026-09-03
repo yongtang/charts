@@ -1,4 +1,4 @@
-const ALLOWED = new Set(["api.stlouisfed.org"]);
+const ALLOWED = new Set(["api.stlouisfed.org", "cdn.cboe.com"]);
 
 const CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -47,7 +47,6 @@ export default {
         }
 
         const headers = new Headers(request.headers);
-
         headers.delete("X-Proxy-URL");
         headers.delete("Origin");
         headers.delete("Referer");
@@ -60,7 +59,6 @@ export default {
         });
 
         const output = new Headers(response.headers);
-
         output.set("Access-Control-Allow-Origin", "*");
         output.set("Access-Control-Expose-Headers", "*");
         output.set("Cache-Control", "no-store");

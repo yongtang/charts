@@ -29,4 +29,4 @@ url:
 		-e PROXY_URL="$(PROXY_URL)" \
 		-e FRED_KEY="$(FRED_KEY)" \
 		$(IMAGE) \
-		node -e 'const page = new URL(process.env.PAGE_URL); const chart = new URL("./rate.js", page); chart.searchParams.set("range", "5y"); chart.searchParams.set("proxy", process.env.PROXY_URL); page.searchParams.set("url", chart.href); page.hash = new URLSearchParams([["key", process.env.FRED_KEY]]); console.log(page.href)'
+		node -e 'const base = new URL(process.env.PAGE_URL); const rate = new URL(base); const rateChart = new URL("./rate.js", base); rateChart.searchParams.set("range", "5y"); rateChart.searchParams.set("proxy", process.env.PROXY_URL); rate.searchParams.set("url", rateChart.href); rate.hash = new URLSearchParams([["key", process.env.FRED_KEY]]); const vix = new URL(base); const vixChart = new URL("./vix.js", base); vixChart.searchParams.set("range", "5y"); vixChart.searchParams.set("proxy", process.env.PROXY_URL); vix.searchParams.set("url", vixChart.href); console.log(rate.href); console.log(vix.href)'
