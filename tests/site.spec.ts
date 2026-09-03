@@ -24,6 +24,7 @@ async function stubVega(page: Page) {
                     target.dataset.rendered = "true";
                     target.dataset.spec = JSON.stringify(spec);
                     target.dataset.actions = String(options.actions);
+                    target.dataset.theme = String(options.theme);
                     return {};
                 };
             `
@@ -52,6 +53,7 @@ test("renders Vega-Lite JSON", async ({ page }) => {
     await stubVega(page);
 
     const url = "https://charts.test/chart.json";
+
     const spec = {
         title: "Chart",
         data: {
@@ -83,11 +85,28 @@ test("renders Vega-Lite JSON", async ({ page }) => {
 
     await expect(chart).toHaveAttribute("data-rendered", "true");
     await expect(chart).toHaveAttribute("data-actions", "false");
+    await expect(chart).toHaveAttribute("data-theme", "carbonwhite");
 
     const rendered = await chart.getAttribute("data-spec");
 
     expect(rendered).not.toBeNull();
     expect(JSON.parse(rendered!)).toEqual(spec);
+});
+
+test("allows theme override", async ({ page }) => {
+    await stubVega(page);
+
+    const url = "https://charts.test/chart.json";
+
+    await page.route(url, (route) =>
+        fulfillJson(route, {
+            mark: "line",
+        }),
+    );
+
+    await page.goto(`/?url=${encodeURIComponent(url)}&theme=dark`);
+
+    await expect(page.locator("#chart")).toHaveAttribute("data-theme", "dark");
 });
 
 test("resolves one-level refs from JSON or JS across domains", async ({ page }) => {
@@ -268,9 +287,11 @@ test("rate module owns its configuration", async ({ page }) => {
             value: 4.25,
         },
     ]);
+
     expect(spec.encoding.color.legend).toEqual({
         orient: "bottom",
     });
+
     expect(spec).not.toHaveProperty("$schema");
     expect(spec).not.toHaveProperty("config");
 });
@@ -280,5 +301,5 @@ test("requires url", async ({ page }) => {
 
     await page.goto("/");
 
-    await expect(page.locator("body")).toContainText("Missing url");
+    await expect(page.locator("body")).toContainText("Missing required url parameter");
 });

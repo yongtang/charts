@@ -1,6 +1,6 @@
 const SERIES = [
-    ["SOFR", "SOFR"],
     ["DFF", "Fed Funds"],
+    ["SOFR", "SOFR"],
     ["DGS3MO", "3M"],
     ["DGS2", "2Y"],
     ["DGS5", "5Y"],

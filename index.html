@@ -2,6 +2,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Charts</title>
+
 <style>
     html,
     body {
@@ -51,8 +52,10 @@
     async function main() {
         const page = new URL(location.href);
         const value = page.searchParams.get("url");
-        if (!value) throw new Error("Missing url");
 
+        if (!value) throw new Error("Missing required url parameter");
+
+        const theme = page.searchParams.get("theme") ?? "carbonwhite";
         const source = new URL(value, page);
         const spec = await load(source);
 
@@ -67,6 +70,7 @@
         await vegaEmbed("#chart", spec, {
             actions: false,
             renderer: "canvas",
+            theme,
         });
     }
 
