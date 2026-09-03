@@ -29,4 +29,4 @@ url:
 		-e PROXY_URL="$(PROXY_URL)" \
 		-e FRED_KEY="$(FRED_KEY)" \
 		$(IMAGE) \
-		node -e 'const url = new URL(process.env.PAGE_URL); url.searchParams.append("source", "./rate.js?range=5y"); url.searchParams.append("proxy", process.env.PROXY_URL); url.hash = new URLSearchParams([["key", process.env.FRED_KEY]]); console.log(url.href)'
+		node -e 'const page = new URL(process.env.PAGE_URL); const chart = new URL("./rate.js", page); chart.searchParams.set("range", "5y"); chart.searchParams.set("proxy", process.env.PROXY_URL); page.searchParams.set("url", chart.href); page.hash = new URLSearchParams([["key", process.env.FRED_KEY]]); console.log(page.href)'

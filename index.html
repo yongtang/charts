@@ -2,7 +2,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Charts</title>
-
 <style>
     html,
     body {
@@ -13,9 +12,8 @@
         padding: 12px;
     }
 
-    .chart {
+    #chart {
         width: 100%;
-        margin-bottom: 32px;
     }
 
     .error {
@@ -23,7 +21,7 @@
     }
 </style>
 
-<div id="charts"></div>
+<div id="chart"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.3"></script>
@@ -32,78 +30,48 @@
 <script type="module">
     function errorText(error) {
         if (!(error instanceof Error)) return String(error);
+        if (!error.stack || error.stack.includes(error.message))
+            return error.stack ?? error.message;
+        return `${error.message}\n${error.stack}`;
+    }
 
-        return error.stack?.includes(error.message)
-            ? error.stack
-            : `${error.message}\n${error.stack ?? ""}`;
+    async function load(value, base = location.href) {
+        const url = new URL(value, base);
+
+        if (url.pathname.endsWith(".json")) {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) throw new Error(`${response.status} ${response.statusText}: ${url}`);
+            return response.json();
+        }
+
+        const module = await import(url.href);
+        return typeof module.default === "function" ? module.default() : module.default;
     }
 
     async function main() {
         const page = new URL(location.href);
+        const value = page.searchParams.get("url");
+        if (!value) throw new Error("Missing url");
 
-        const sources = page.searchParams.getAll("source");
-        const proxies = page.searchParams.getAll("proxy");
-        const keys = new URLSearchParams(page.hash.slice(1)).getAll("key");
+        const source = new URL(value, page);
+        const spec = await load(source);
 
-        if (!sources.length) throw new Error("Missing source");
+        for (const key of ["concat", "hconcat", "vconcat"]) {
+            if (!spec[key]) continue;
 
-        if (proxies.length !== sources.length) throw new Error("source and proxy counts differ");
-
-        if (keys.length !== sources.length) throw new Error("source and key counts differ");
-
-        async function render(i) {
-            const element = document.createElement("div");
-
-            element.className = "chart";
-            document.querySelector("#charts").append(element);
-
-            try {
-                const source = new URL(sources[i], page);
-                const proxy = proxies[i] ? new URL(proxies[i], page) : null;
-
-                async function request(url, init = {}) {
-                    const target = new URL(url, source);
-
-                    if (!proxy) {
-                        return fetch(target, {
-                            ...init,
-                            cache: "no-store",
-                        });
-                    }
-
-                    const headers = new Headers(init.headers);
-
-                    headers.set("X-Proxy-URL", target.href);
-
-                    return fetch(proxy, {
-                        ...init,
-                        headers,
-                        cache: "no-store",
-                    });
-                }
-
-                const module = await import(source);
-
-                const spec = await module.default({
-                    url: source,
-                    key: keys[i] || null,
-                    request,
-                });
-
-                await vegaEmbed(element, spec, {
-                    actions: false,
-                    renderer: "canvas",
-                });
-            } catch (error) {
-                element.classList.add("error");
-                element.textContent = errorText(error);
-            }
+            spec[key] = await Promise.all(
+                spec[key].map((view) => (view?.$ref ? load(view.$ref, source) : view)),
+            );
         }
 
-        await Promise.all(sources.map((_, i) => render(i)));
+        await vegaEmbed("#chart", spec, {
+            actions: false,
+            renderer: "canvas",
+        });
     }
 
     main().catch((error) => {
+        document.body.classList.add("error");
         document.body.textContent = errorText(error);
     });
 </script>
