@@ -119,6 +119,7 @@ await mkdir("_site/data", {
 });
 await Promise.all([
   copyFile("index.html", "_site/index.html"),
+  copyFile("view.json", "_site/view.json"),
   copyFile("data/treasury.vl.json", "_site/data/treasury.vl.json"),
   writeFile(
     "_site/data/treasury.csv",

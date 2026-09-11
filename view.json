@@ -1,0 +1,20 @@
+{
+  "columns": 1,
+  "spacing": 24,
+  "config": {
+    "font": "system-ui",
+    "view": {
+      "continuousWidth": 900,
+      "continuousHeight": 260,
+      "stroke": null
+    },
+    "axis": {
+      "domain": false,
+      "tickSize": 0,
+      "gridOpacity": 0.12
+    },
+    "title": {
+      "anchor": "start"
+    }
+  }
+}
