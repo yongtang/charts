@@ -1,0 +1,8 @@
+LICENSE
+.gitignore
+.gitattributes
+.gitmodules
+node_modules/
+_site/
+playwright-report/
+test-results/
