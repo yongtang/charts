@@ -1,0 +1,116 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "title": "U.S. Treasury Yields",
+  "description": "Daily U.S. Treasury par yield curve rates from 1990 to present.",
+  "data": {
+    "url": "treasury.csv",
+    "format": {
+      "type": "csv"
+    }
+  },
+  "columns": 1,
+  "concat": [
+    {
+      "title": "Treasury Yields",
+      "transform": [
+        {
+          "fold": ["2 yr", "5 yr", "10 yr", "30 yr"],
+          "as": ["maturity", "raw_yield"]
+        },
+        {
+          "calculate": "datum.raw_yield === '' ? null : toNumber(datum.raw_yield)",
+          "as": "yield"
+        }
+      ],
+      "params": [
+        {
+          "name": "pick",
+          "select": {
+            "type": "point",
+            "fields": ["maturity"]
+          },
+          "bind": "legend"
+        }
+      ],
+      "mark": {
+        "type": "line",
+        "invalid": "break-paths-filter-domains"
+      },
+      "encoding": {
+        "x": {
+          "field": "date",
+          "type": "temporal",
+          "title": "Date"
+        },
+        "y": {
+          "field": "yield",
+          "type": "quantitative",
+          "title": "Yield (%)"
+        },
+        "color": {
+          "field": "maturity",
+          "type": "nominal",
+          "title": "Maturity"
+        },
+        "opacity": {
+          "condition": {
+            "param": "pick",
+            "value": 1
+          },
+          "value": 0.15
+        },
+        "tooltip": [
+          {
+            "field": "date",
+            "type": "temporal"
+          },
+          {
+            "field": "maturity",
+            "type": "nominal"
+          },
+          {
+            "field": "yield",
+            "type": "quantitative",
+            "format": ".2f"
+          }
+        ]
+      }
+    },
+    {
+      "title": "10Y − 2Y Spread",
+      "transform": [
+        {
+          "calculate": "datum['10 yr'] === '' || datum['2 yr'] === '' ? null : toNumber(datum['10 yr']) - toNumber(datum['2 yr'])",
+          "as": "spread"
+        }
+      ],
+      "mark": {
+        "type": "line",
+        "invalid": "break-paths-filter-domains"
+      },
+      "encoding": {
+        "x": {
+          "field": "date",
+          "type": "temporal",
+          "title": "Date"
+        },
+        "y": {
+          "field": "spread",
+          "type": "quantitative",
+          "title": "Percentage points"
+        },
+        "tooltip": [
+          {
+            "field": "date",
+            "type": "temporal"
+          },
+          {
+            "field": "spread",
+            "type": "quantitative",
+            "format": ".2f"
+          }
+        ]
+      }
+    }
+  ]
+}

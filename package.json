@@ -1,0 +1,25 @@
+{
+  "name": "charts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24"
+  },
+  "scripts": {
+    "page": "node scripts/page.ts && tsc",
+    "lint": "prettier --write . && eslint . --fix && find . -type f ! -name 'LICENSE' ! -name '.git*' -not -path './.git/*' -not -path './node_modules/*' -not -path './_site/*' -not -path './playwright-report/*' -not -path './test-results/*' -exec sh -c 'for file do grep -Iq \"\" \"$file\" && sed -i -e \"s/[[:blank:]]*$//\" -e \"/^$/d\" \"$file\"; done' sh {} +",
+    "test": "prettier --check . && eslint . && playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "eslint": "10.9.1",
+    "globals": "17.11.0",
+    "http-server": "14.1.1",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.69.0",
+    "vega-embed": "7.2.0"
+  }
+}
