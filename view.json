@@ -1,8 +1,10 @@
 {
+  "background": "#FFFFFF",
+  "padding": 10,
   "columns": 1,
-  "spacing": 24,
+  "spacing": 32,
   "config": {
-    "font": "system-ui",
+    "font": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"Helvetica Neue\", Arial, sans-serif",
     "view": {
       "continuousWidth": 900,
       "continuousHeight": 260,
@@ -11,10 +13,61 @@
     "axis": {
       "domain": false,
       "tickSize": 0,
-      "gridOpacity": 0.12
+      "grid": true,
+      "gridColor": "#D1D1D6",
+      "gridOpacity": 0.5,
+      "gridWidth": 1,
+      "labelColor": "#8E8E93",
+      "labelFontSize": 13,
+      "labelFontWeight": 400,
+      "labelPadding": 6,
+      "titleColor": "#3C3C43",
+      "titleFontSize": 13,
+      "titleFontWeight": 600,
+      "titlePadding": 10
     },
     "title": {
-      "anchor": "start"
+      "anchor": "start",
+      "color": "#000000",
+      "fontSize": 18,
+      "fontWeight": 600,
+      "offset": 8
+    },
+    "legend": {
+      "orient": "bottom",
+      "direction": "horizontal",
+      "labelColor": "#3C3C43",
+      "labelFontSize": 13,
+      "labelFontWeight": 400,
+      "titleColor": "#3C3C43",
+      "titleFontSize": 13,
+      "titleFontWeight": 600,
+      "offset": 18,
+      "padding": 0
+    },
+    "line": {
+      "strokeWidth": 2,
+      "strokeCap": "round",
+      "strokeJoin": "round"
+    },
+    "point": {
+      "filled": true,
+      "size": 100
+    },
+    "bar": {
+      "cornerRadiusEnd": 8
+    },
+    "range": {
+      "category": [
+        "#007AFF",
+        "#FF9500",
+        "#34C759",
+        "#FF3B30",
+        "#AF52DE",
+        "#5AC8FA",
+        "#FF2D55",
+        "#FFCC00"
+      ]
     }
   }
 }

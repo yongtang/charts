@@ -11,11 +11,15 @@ test("mirrors Treasury history", async ({ request }) => {
   const latestYear = Number(lines.at(-1)?.slice(0, 4));
   expect(latestYear).toBeGreaterThanOrEqual(new Date().getUTCFullYear() - 1);
 });
-test("renders nothing by default", async ({ page }) => {
+test("renders nothing without input", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("#vis svg")).toHaveCount(0);
 });
-test("renders Treasury by url", async ({ page }) => {
+test("renders Treasury from url", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+  });
   await page.goto(
     `/?${new URLSearchParams({
       url: "data/treasury.vl.json",
@@ -24,12 +28,17 @@ test("renders Treasury by url", async ({ page }) => {
   await expect(page.locator("#vis svg")).toBeVisible();
   await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
   await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
+  expect(errors).toEqual([]);
 });
-test("renders Treasury by spec", async ({ page, request }) => {
+test("renders Treasury from spec", async ({ page, request }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+  });
   const response = await request.get("/data/treasury.vl.json");
   expect(response.ok()).toBeTruthy();
   const spec = await response.json();
-  spec.data.url = "/data/treasury.csv";
+  spec.data.url = "data/treasury.csv";
   await page.goto(
     `/?${new URLSearchParams({
       spec: JSON.stringify(spec),
@@ -38,4 +47,5 @@ test("renders Treasury by spec", async ({ page, request }) => {
   await expect(page.locator("#vis svg")).toBeVisible();
   await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
   await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
+  expect(errors).toEqual([]);
 });
