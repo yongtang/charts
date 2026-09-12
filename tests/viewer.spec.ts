@@ -11,14 +11,31 @@ test("mirrors Treasury history", async ({ request }) => {
   const latestYear = Number(lines.at(-1)?.slice(0, 4));
   expect(latestYear).toBeGreaterThanOrEqual(new Date().getUTCFullYear() - 1);
 });
-test("renders Treasury charts", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => {
-    errors.push(error.message);
-  });
+test("renders nothing by default", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("#vis svg")).toHaveCount(0);
+});
+test("renders Treasury by url", async ({ page }) => {
+  await page.goto(
+    `/?${new URLSearchParams({
+      url: "data/treasury.vl.json",
+    })}`,
+  );
   await expect(page.locator("#vis svg")).toBeVisible();
   await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
   await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
-  expect(errors).toEqual([]);
+});
+test("renders Treasury by spec", async ({ page, request }) => {
+  const response = await request.get("/data/treasury.vl.json");
+  expect(response.ok()).toBeTruthy();
+  const spec = await response.json();
+  spec.data.url = "/data/treasury.csv";
+  await page.goto(
+    `/?${new URLSearchParams({
+      spec: JSON.stringify(spec),
+    })}`,
+  );
+  await expect(page.locator("#vis svg")).toBeVisible();
+  await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
+  await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
 });
