@@ -75,10 +75,7 @@ const packageJson = JSON.parse(
 ) as Package;
 const index = (await readFile("index.html", "utf8"))
   .replaceAll("__CSV_PARSE_VERSION__", packageJson.dependencies["csv-parse"])
-  .replaceAll(
-    "__LIGHTWEIGHT_CHARTS_VERSION__",
-    packageJson.dependencies["lightweight-charts"],
-  );
+  .replaceAll("__ECHARTS_VERSION__", packageJson.dependencies["echarts"]);
 const urls: (string | URL)[] = [
   "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rate-archives/par-yield-curve-rates-1990-2023.csv",
 ];

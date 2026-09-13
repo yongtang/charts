@@ -1,7 +1,7 @@
 import type { JsonSpec } from "./JsonSpec.js";
-import { JsonSpecToTradingViewSpec } from "./JsonSpecToTradingViewSpec.js";
+import { JsonSpecToEChartsSpec } from "./JsonSpecToEChartsSpec.js";
 import { TextSpecToJsonSpec } from "./TextSpecToJsonSpec.js";
-import { TradingViewSpecToChart } from "./TradingViewSpecToChart.js";
+import { EChartsSpecToChart } from "./EChartsSpecToChart.js";
 function JsonSpec(value: unknown, source: string): JsonSpec {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`Invalid JSON object: ${source}`);
@@ -40,10 +40,10 @@ if (url !== null || spec !== null || text !== null) {
         : TextSpecToJsonSpec(text!);
   const baseURL =
     inputURL === null ? new URL(".", location.href) : new URL(".", inputURL);
-  const view = await JsonSpecToTradingViewSpec(input, baseURL);
+  const view = await JsonSpecToEChartsSpec(input, baseURL);
   const element = document.getElementById("vis");
   if (!element) {
     throw new Error("Missing #vis");
   }
-  TradingViewSpecToChart(element, view);
+  EChartsSpecToChart(element, view);
 }
