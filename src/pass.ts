@@ -4,8 +4,6 @@ const viewFields = [
   "$schema",
   "config",
   "background",
-  "width",
-  "height",
   "padding",
   "autosize",
   "spacing",
@@ -20,15 +18,19 @@ const compositionFields = [
   "repeat",
   "spec",
 ];
-function clean(spec: Spec): Spec {
-  const output = structuredClone(spec);
-  for (const field of viewFields) {
-    delete output[field];
-  }
-  return output;
-}
 function isSpec(value: unknown): value is Spec {
   return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+function merge(defaults: Spec, overrides: Spec): Spec {
+  const output = structuredClone(defaults);
+  for (const [field, value] of Object.entries(overrides)) {
+    const current = output[field];
+    output[field] =
+      isSpec(current) && isSpec(value)
+        ? merge(current, value)
+        : structuredClone(value);
+  }
+  return output;
 }
 export async function apply(spec: Spec, passes: Pass[]): Promise<Spec> {
   for (const pass of passes) {
@@ -37,7 +39,7 @@ export async function apply(spec: Spec, passes: Pass[]): Promise<Spec> {
   return spec;
 }
 export function normalize(input: Spec): Spec {
-  const output = clean(input);
+  const output = structuredClone(input);
   for (const field of [
     "hconcat",
     "vconcat",
@@ -51,7 +53,15 @@ export function normalize(input: Spec): Spec {
     }
   }
   if (!("concat" in output)) {
+    const view: Spec = {};
+    for (const field of viewFields) {
+      if (field in output) {
+        view[field] = output[field];
+        delete output[field];
+      }
+    }
     return {
+      ...view,
       concat: [output],
     };
   }
@@ -62,20 +72,15 @@ export function normalize(input: Spec): Spec {
     if (!isSpec(chart)) {
       throw new Error(`concat[${index}] must be a chart`);
     }
-    const unit = clean(chart);
     for (const field of compositionFields) {
-      if (field in unit) {
+      if (field in chart) {
         throw new Error(`concat[${index}].${field} is not supported`);
       }
     }
-    return unit;
+    return chart;
   });
   return output;
 }
 export function finalize(view: Spec): Pass {
-  return (input) => ({
-    ...structuredClone(input),
-    ...structuredClone(view),
-    $schema: "https://vega.github.io/schema/vega-lite/v6.json",
-  });
+  return (input) => merge(view, input);
 }

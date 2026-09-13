@@ -13,7 +13,7 @@ test("mirrors Treasury history", async ({ request }) => {
 });
 test("renders nothing without input", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#vis svg")).toHaveCount(0);
+  await expect(page.locator("#vis svg.marks")).toHaveCount(0);
 });
 test("renders Treasury from url", async ({ page }) => {
   const errors: string[] = [];
@@ -25,7 +25,7 @@ test("renders Treasury from url", async ({ page }) => {
       url: "data/treasury.vl.json",
     })}`,
   );
-  await expect(page.locator("#vis svg")).toBeVisible();
+  await expect(page.locator("#vis svg.marks")).toBeVisible();
   await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
   await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
   expect(errors).toEqual([]);
@@ -37,14 +37,18 @@ test("renders Treasury from spec", async ({ page, request }) => {
   });
   const response = await request.get("/data/treasury.vl.json");
   expect(response.ok()).toBeTruthy();
-  const spec = await response.json();
-  spec.data.url = "data/treasury.csv";
+  const spec = (await response.json()) as {
+    data: {
+      url: string;
+    };
+  };
+  spec.data.url = "/data/treasury.csv";
   await page.goto(
     `/?${new URLSearchParams({
       spec: JSON.stringify(spec),
     })}`,
   );
-  await expect(page.locator("#vis svg")).toBeVisible();
+  await expect(page.locator("#vis svg.marks")).toBeVisible();
   await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
   await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
   expect(errors).toEqual([]);
