@@ -1,39 +1,49 @@
-import vegaEmbed from "vega-embed";
-import { apply, finalize, normalize, type Pass, type Spec } from "./pass.js";
-function validate(value: unknown, source: string): Spec {
+import type { JsonSpec } from "./JsonSpec.js";
+import { JsonSpecToTradingViewSpec } from "./JsonSpecToTradingViewSpec.js";
+import { TextSpecToJsonSpec } from "./TextSpecToJsonSpec.js";
+import { TradingViewSpecToChart } from "./TradingViewSpecToChart.js";
+function JsonSpec(value: unknown, source: string): JsonSpec {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`Invalid JSON object: ${source}`);
   }
-  return value as Spec;
+  return value as JsonSpec;
 }
-async function load(url: URL): Promise<Spec> {
+async function load(url: URL): Promise<JsonSpec> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}: ${url}`);
   }
-  return validate(await response.json(), url.href);
+  const source = await response.text();
+  const contentType = response.headers.get("content-type") ?? "";
+  if (
+    contentType.includes("application/json") ||
+    url.pathname.endsWith(".json")
+  ) {
+    return JsonSpec(JSON.parse(source), url.href);
+  }
+  return TextSpecToJsonSpec(source);
 }
 const parameters = new URLSearchParams(location.search);
 const url = parameters.get("url");
 const spec = parameters.get("spec");
-if (url !== null && spec !== null) {
-  throw new Error("Use either url or spec, not both");
+const text = parameters.get("text");
+if ([url, spec, text].filter((value) => value !== null).length > 1) {
+  throw new Error("Use only one of url, spec, or text");
 }
-if (url !== null || spec !== null) {
+if (url !== null || spec !== null || text !== null) {
   const inputURL = url === null ? null : new URL(url, location.href);
   const input =
-    inputURL === null
-      ? validate(JSON.parse(spec!), "spec")
-      : await load(inputURL);
-  const view = await load(new URL("./view.json", location.href));
-  const passes: Pass[] = [normalize, finalize(view)];
-  const output = await apply(input, passes);
-  await vegaEmbed("#vis", output as Parameters<typeof vegaEmbed>[1], {
-    loader: {
-      baseURL:
-        inputURL === null
-          ? new URL(".", location.href).href
-          : new URL(".", inputURL).href,
-    },
-  });
+    inputURL !== null
+      ? await load(inputURL)
+      : spec !== null
+        ? JsonSpec(JSON.parse(spec), "spec")
+        : TextSpecToJsonSpec(text!);
+  const baseURL =
+    inputURL === null ? new URL(".", location.href) : new URL(".", inputURL);
+  const view = await JsonSpecToTradingViewSpec(input, baseURL);
+  const element = document.getElementById("vis");
+  if (!element) {
+    throw new Error("Missing #vis");
+  }
+  TradingViewSpecToChart(element, view);
 }

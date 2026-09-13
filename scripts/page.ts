@@ -1,5 +1,9 @@
-import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { parse } from "csv-parse/sync";
 type Row = Record<string, string>;
+type Package = {
+  dependencies: Record<string, string>;
+};
 const columns = [
   "date",
   "1 mo",
@@ -17,29 +21,6 @@ const columns = [
   "20 yr",
   "30 yr",
 ];
-function fields(line: string): string[] {
-  const output: string[] = [];
-  let value = "";
-  let quoted = false;
-  for (let index = 0; index < line.length; ++index) {
-    const character = line[index];
-    if (character === '"') {
-      if (quoted && line[index + 1] === '"') {
-        value += '"';
-        ++index;
-      } else {
-        quoted = !quoted;
-      }
-    } else if (character === "," && !quoted) {
-      output.push(value.trim());
-      value = "";
-    } else {
-      value += character;
-    }
-  }
-  output.push(value.trim());
-  return output;
-}
 function date(value: string): string {
   const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value);
   if (!match) {
@@ -47,25 +28,22 @@ function date(value: string): string {
   }
   return `${match[3]}-${match[1].padStart(2, "0")}-${match[2].padStart(2, "0")}`;
 }
-function parse(text: string): Row[] {
-  const lines = text
-    .replace(/^\uFEFF/, "")
-    .trim()
-    .split(/\r?\n/);
-  const header = lines.shift();
-  if (!header) {
+function parseTreasury(text: string): Row[] {
+  const rows = parse(text, {
+    bom: true,
+    columns: (header: string[]) =>
+      header.map((name) => name.trim().toLowerCase()),
+    skip_empty_lines: true,
+    trim: true,
+  }) as Row[];
+  if (rows.length === 0) {
     throw new Error("Empty Treasury CSV");
   }
-  const names = fields(header).map((name) => name.toLowerCase());
+  const names = Object.keys(rows[0]);
   if (!names.includes("date") || !names.includes("10 yr")) {
-    throw new Error(`Unexpected Treasury CSV: ${header}`);
+    throw new Error(`Unexpected Treasury CSV: ${names.join(",")}`);
   }
-  return lines.filter(Boolean).map((line) => {
-    const values = fields(line);
-    const source: Row = {};
-    names.forEach((name, index) => {
-      source[name] = values[index] ?? "";
-    });
+  return rows.map((source) => {
     const row: Row = {};
     for (const column of columns) {
       const value = source[column] ?? "";
@@ -92,6 +70,15 @@ async function download(url: string | URL): Promise<string> {
   }
   return response.text();
 }
+const packageJson = JSON.parse(
+  await readFile("package.json", "utf8"),
+) as Package;
+const index = (await readFile("index.html", "utf8"))
+  .replaceAll("__CSV_PARSE_VERSION__", packageJson.dependencies["csv-parse"])
+  .replaceAll(
+    "__LIGHTWEIGHT_CHARTS_VERSION__",
+    packageJson.dependencies["lightweight-charts"],
+  );
 const urls: (string | URL)[] = [
   "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rate-archives/par-yield-curve-rates-1990-2023.csv",
 ];
@@ -100,7 +87,7 @@ for (let year = 2024; year <= new Date().getUTCFullYear(); ++year) {
 }
 const rows = new Map<string, Row>();
 for (const text of await Promise.all(urls.map(download))) {
-  for (const row of parse(text)) {
+  for (const row of parseTreasury(text)) {
     rows.set(row.date, row);
   }
 }
@@ -118,9 +105,8 @@ await mkdir("_site/data", {
   recursive: true,
 });
 await Promise.all([
-  copyFile("index.html", "_site/index.html"),
-  copyFile("view.json", "_site/view.json"),
-  copyFile("data/treasury.vl.json", "_site/data/treasury.vl.json"),
+  writeFile("_site/index.html", index),
+  copyFile("data/treasury.json", "_site/data/treasury.json"),
   writeFile(
     "_site/data/treasury.csv",
     [

@@ -1,0 +1,17 @@
+{
+  "source": "treasury.csv",
+  "series": [
+    {
+      "data": "2 yr"
+    },
+    {
+      "data": "5 yr"
+    },
+    {
+      "data": "10 yr"
+    },
+    {
+      "data": "30 yr"
+    }
+  ]
+}

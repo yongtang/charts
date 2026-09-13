@@ -13,7 +13,7 @@ test("mirrors Treasury history", async ({ request }) => {
 });
 test("renders nothing without input", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#vis svg.marks")).toHaveCount(0);
+  await expect(page.locator("#vis canvas")).toHaveCount(0);
 });
 test("renders Treasury from url", async ({ page }) => {
   const errors: string[] = [];
@@ -22,34 +22,50 @@ test("renders Treasury from url", async ({ page }) => {
   });
   await page.goto(
     `/?${new URLSearchParams({
-      url: "data/treasury.vl.json",
+      url: "data/treasury.json",
     })}`,
   );
-  await expect(page.locator("#vis svg.marks")).toBeVisible();
-  await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
-  await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
+  await expect(page.locator("#vis canvas").first()).toBeVisible();
   expect(errors).toEqual([]);
 });
-test("renders Treasury from spec", async ({ page, request }) => {
+test("renders Treasury from JsonSpec", async ({ page, request }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => {
     errors.push(error.message);
   });
-  const response = await request.get("/data/treasury.vl.json");
+  const response = await request.get("/data/treasury.json");
   expect(response.ok()).toBeTruthy();
   const spec = (await response.json()) as {
-    data: {
-      url: string;
-    };
+    source: string;
   };
-  spec.data.url = "/data/treasury.csv";
+  spec.source = "/data/treasury.csv";
   await page.goto(
     `/?${new URLSearchParams({
       spec: JSON.stringify(spec),
     })}`,
   );
-  await expect(page.locator("#vis svg.marks")).toBeVisible();
-  await expect(page.getByText("U.S. Treasury Yields")).toBeVisible();
-  await expect(page.getByText("10Y − 2Y Spread")).toBeVisible();
+  await expect(page.locator("#vis canvas").first()).toBeVisible();
+  expect(errors).toEqual([]);
+});
+test("renders Treasury from TextSpec", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => {
+    errors.push(error.message);
+  });
+  const spec = [
+    "source,/data/treasury.csv",
+    "---",
+    "data",
+    "2 yr",
+    "5 yr",
+    "10 yr",
+    "30 yr",
+  ].join("\n");
+  await page.goto(
+    `/?${new URLSearchParams({
+      text: spec,
+    })}`,
+  );
+  await expect(page.locator("#vis canvas").first()).toBeVisible();
   expect(errors).toEqual([]);
 });

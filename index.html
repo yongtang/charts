@@ -4,10 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Charts</title>
+    <style>
+      html,
+      body,
+      #vis {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+    </style>
     <script type="importmap">
       {
         "imports": {
-          "vega-embed": "https://cdn.jsdelivr.net/npm/vega-embed@7.2.0/+esm"
+          "csv-parse/sync": "https://cdn.jsdelivr.net/npm/csv-parse@__CSV_PARSE_VERSION__/dist/esm/sync.js",
+          "lightweight-charts": "https://cdn.jsdelivr.net/npm/lightweight-charts@__LIGHTWEIGHT_CHARTS_VERSION__/+esm"
         }
       }
     </script>

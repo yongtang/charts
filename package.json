@@ -11,6 +11,10 @@
     "lint": "prettier --write . && eslint . --fix && find . -type f ! -name 'LICENSE' ! -name '.git*' -not -path './.git/*' -not -path './node_modules/*' -not -path './_site/*' -not -path './playwright-report/*' -not -path './test-results/*' -exec sh -c 'for file do grep -Iq \"\" \"$file\" && sed -i -e \"s/[[:blank:]]*$//\" -e \"/^$/d\" \"$file\"; done' sh {} +",
     "test": "prettier --check . && eslint . && playwright test"
   },
+  "dependencies": {
+    "csv-parse": "7.0.2",
+    "lightweight-charts": "5.2.1"
+  },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.63.0",
@@ -19,7 +23,6 @@
     "http-server": "14.1.1",
     "prettier": "3.9.6",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.70.0",
-    "vega-embed": "7.2.0"
+    "typescript-eslint": "8.70.0"
   }
 }
