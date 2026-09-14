@@ -1,7 +1,7 @@
+import { compile } from "./compile.js";
 import type { JsonSpec } from "./JsonSpec.js";
-import { JsonSpecToEChartsSpec } from "./JsonSpecToEChartsSpec.js";
+import { render } from "./render.js";
 import { TextSpecToJsonSpec } from "./TextSpecToJsonSpec.js";
-import { EChartsSpecToChart } from "./EChartsSpecToChart.js";
 function JsonSpec(value: unknown, source: string): JsonSpec {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`Invalid JSON object: ${source}`);
@@ -40,10 +40,10 @@ if (url !== null || spec !== null || text !== null) {
         : TextSpecToJsonSpec(text!);
   const baseURL =
     inputURL === null ? new URL(".", location.href) : new URL(".", inputURL);
-  const view = await JsonSpecToEChartsSpec(input, baseURL);
+  const view = await compile(input, baseURL, "echarts");
   const element = document.getElementById("vis");
   if (!element) {
     throw new Error("Missing #vis");
   }
-  EChartsSpecToChart(element, view);
+  await render(element, view);
 }
