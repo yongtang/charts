@@ -73,9 +73,23 @@ async function download(url: string | URL): Promise<string> {
 const packageJson = JSON.parse(
   await readFile("package.json", "utf8"),
 ) as Package;
-const index = (await readFile("index.html", "utf8"))
-  .replaceAll("__CSV_PARSE_VERSION__", packageJson.dependencies["csv-parse"])
-  .replaceAll("__ECHARTS_VERSION__", packageJson.dependencies["echarts"]);
+function page(source: string): string {
+  return source
+    .replaceAll(
+      "__WEB_AWESOME_VERSION__",
+      packageJson.dependencies["@awesome.me/webawesome"],
+    )
+    .replaceAll(
+      "__CODEMIRROR_VERSION__",
+      packageJson.dependencies["codemirror"],
+    )
+    .replaceAll("__CSV_PARSE_VERSION__", packageJson.dependencies["csv-parse"])
+    .replaceAll("__ECHARTS_VERSION__", packageJson.dependencies["echarts"]);
+}
+const [index, editor] = await Promise.all([
+  readFile("index.html", "utf8"),
+  readFile("editor.html", "utf8"),
+]);
 const urls: (string | URL)[] = [
   "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rate-archives/par-yield-curve-rates-1990-2023.csv",
 ];
@@ -102,7 +116,8 @@ await mkdir("_site/data", {
   recursive: true,
 });
 await Promise.all([
-  writeFile("_site/index.html", index),
+  writeFile("_site/index.html", page(index)),
+  writeFile("_site/editor.html", page(editor)),
   copyFile("data/treasury.json", "_site/data/treasury.json"),
   writeFile(
     "_site/data/treasury.csv",

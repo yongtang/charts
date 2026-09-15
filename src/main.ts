@@ -26,18 +26,15 @@ async function load(url: URL): Promise<JsonSpec> {
 const parameters = new URLSearchParams(location.search);
 const url = parameters.get("url");
 const spec = parameters.get("spec");
-const text = parameters.get("text");
-if ([url, spec, text].filter((value) => value !== null).length > 1) {
-  throw new Error("Use only one of url, spec, or text");
+if (url !== null && spec !== null) {
+  throw new Error("Use only one of url or spec");
 }
-if (url !== null || spec !== null || text !== null) {
+if (url !== null || spec !== null) {
   const inputURL = url === null ? null : new URL(url, location.href);
   const input =
     inputURL !== null
       ? await load(inputURL)
-      : spec !== null
-        ? JsonSpec(JSON.parse(spec), "spec")
-        : TextSpecToJsonSpec(text!);
+      : JsonSpec(JSON.parse(spec!), "spec");
   const baseURL =
     inputURL === null ? new URL(".", location.href) : new URL(".", inputURL);
   const view = await compile(input, baseURL, "echarts");

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Charts</title>
+    <script>
+      const parameters = new URLSearchParams(location.search);
+      if (!parameters.has("url") && !parameters.has("spec")) {
+        location.replace("./editor.html");
+      }
+    </script>
     <style>
       html,
       body,
