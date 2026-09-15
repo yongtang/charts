@@ -1,11 +1,21 @@
 import * as echarts from "echarts";
+import type { DataSet } from "../../DataSet.js";
 import type { EChartsSpec } from "../../compiler/echarts/EChartsSpec.js";
 const observers = new WeakMap<HTMLElement, ResizeObserver>();
-export function EChartsSpecToChart(element: HTMLElement, config: EChartsSpec) {
+export function EChartsSpecToChart(
+  element: HTMLElement,
+  config: EChartsSpec,
+  data: DataSet,
+) {
   observers.get(element)?.disconnect();
   echarts.getInstanceByDom(element)?.dispose();
   const chart = echarts.init(element);
-  chart.setOption(config);
+  chart.setOption({
+    ...config,
+    dataset: {
+      source: data,
+    },
+  });
   const observer = new ResizeObserver(() => {
     chart.resize();
   });

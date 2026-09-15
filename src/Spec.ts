@@ -1,5 +1,4 @@
-import type { JsonSpec } from "../JsonSpec.js";
-export type Converter = (value: unknown, field: string) => unknown;
+import type { JsonSpec } from "./JsonSpec.js";
 export function isObject(value: unknown): value is JsonSpec {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }

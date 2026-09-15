@@ -1,14 +1,16 @@
+import type { CompiledSpec } from "./CompiledSpec.js";
 import type { Compiler } from "./compiler/Compiler.js";
 import { backend } from "./compiler/pass/backend.js";
-import { assertEmpty } from "./compiler/Spec.js";
+import { data } from "./compiler/pass/data.js";
 import type { JsonSpec } from "./JsonSpec.js";
-import type { ViewSpec } from "./ViewSpec.js";
+import { assertEmpty } from "./Spec.js";
 export async function compile(
   input: JsonSpec,
-  baseURL: URL,
   defaultBackend: string,
-): Promise<ViewSpec> {
-  const [name, inputSpec] = backend(input, defaultBackend);
+): Promise<CompiledSpec> {
+  const [name, backendSpec] = backend(input, defaultBackend);
+  const [initialSpec, dataSpec] = data(backendSpec);
+  let spec = initialSpec;
   let compiler: Compiler<unknown>;
   try {
     compiler = (await import(`./compiler/${name}/index.js`))
@@ -18,17 +20,16 @@ export async function compile(
       cause: error,
     });
   }
-  let spec = inputSpec;
   let view = compiler.create();
-  const context = {
-    baseURL,
-  };
   for (const pass of compiler.passes) {
-    [spec, view] = await pass(spec, view, context);
+    [spec, view] = await pass(spec, view);
   }
   assertEmpty(spec, "spec");
   return {
-    backend: name,
-    spec: view,
+    view: {
+      backend: name,
+      spec: view,
+    },
+    data: dataSpec,
   };
 }

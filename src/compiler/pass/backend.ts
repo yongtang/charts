@@ -1,5 +1,5 @@
 import type { JsonSpec } from "../../JsonSpec.js";
-import { string } from "../Spec.js";
+import { string } from "../../Spec.js";
 export function backend(input: JsonSpec, fallback: string): [string, JsonSpec] {
   const spec = structuredClone(input);
   const value = "backend" in spec ? spec.backend : fallback;

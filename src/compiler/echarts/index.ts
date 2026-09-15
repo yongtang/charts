@@ -1,6 +1,5 @@
 import type { Compiler } from "../Compiler.js";
 import { mapping } from "../pass/mapping.js";
-import { resolve } from "../pass/resolve.js";
 import type { EChartsSpec } from "./EChartsSpec.js";
 import { lower } from "./lower.js";
 import { normalize } from "./normalize.js";
@@ -12,6 +11,6 @@ const viewFields = {
 };
 const compiler: Compiler<EChartsSpec> = {
   create: () => ({}),
-  passes: [normalize, resolve, mapping<EChartsSpec>(viewFields), lower],
+  passes: [normalize, mapping<EChartsSpec>(viewFields), lower],
 };
 export default compiler;

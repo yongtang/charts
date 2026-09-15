@@ -1,6 +1,7 @@
 import { compile } from "./compile.js";
 import type { JsonSpec } from "./JsonSpec.js";
 import { render } from "./render.js";
+import { resolve } from "./resolve.js";
 import { TextSpecToJsonSpec } from "./TextSpecToJsonSpec.js";
 function JsonSpec(value: unknown, source: string): JsonSpec {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -37,10 +38,11 @@ if (url !== null || spec !== null) {
       : JsonSpec(JSON.parse(spec!), "spec");
   const baseURL =
     inputURL === null ? new URL(".", location.href) : new URL(".", inputURL);
-  const view = await compile(input, baseURL, "echarts");
+  const compiled = await compile(input, "echarts");
+  const data = await resolve(compiled.data, baseURL);
   const element = document.getElementById("vis");
   if (!element) {
     throw new Error("Missing #vis");
   }
-  await render(element, view);
+  await render(element, compiled.view, data);
 }

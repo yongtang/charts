@@ -1,6 +1,6 @@
 import type { JsonSpec } from "../../JsonSpec.js";
+import { merge, object, records, take } from "../../Spec.js";
 import type { PassResult } from "../Compiler.js";
-import { merge, object, records, take } from "../Spec.js";
 import type { EChartsSpec } from "./EChartsSpec.js";
 const system: JsonSpec = {
   time: "date",

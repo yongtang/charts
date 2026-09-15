@@ -1,8 +1,10 @@
+import type { DataSet } from "./DataSet.js";
 import type { ViewSpec } from "./ViewSpec.js";
-type Renderer = (element: HTMLElement, spec: unknown) => unknown;
+type Renderer = (element: HTMLElement, spec: unknown, data: DataSet) => unknown;
 export async function render(
   element: HTMLElement,
   view: ViewSpec,
+  data: DataSet,
 ): Promise<unknown> {
   let renderer: Renderer;
   try {
@@ -13,5 +15,5 @@ export async function render(
       cause: error,
     });
   }
-  return renderer(element, view.spec);
+  return renderer(element, view.spec, data);
 }

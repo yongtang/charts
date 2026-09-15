@@ -1,6 +1,7 @@
 import { basicSetup, EditorView } from "codemirror";
 import { compile } from "./compile.js";
 import { render } from "./render.js";
+import { resolve } from "./resolve.js";
 import { TextSpecToJsonSpec } from "./TextSpecToJsonSpec.js";
 function element(id: string): HTMLElement {
   const value = document.getElementById(id);
@@ -27,11 +28,15 @@ let timer: number | undefined;
 async function update(text: string, current: number): Promise<void> {
   try {
     const input = TextSpecToJsonSpec(text);
-    const view = await compile(input, baseURL, "echarts");
+    const compiled = await compile(input, "echarts");
     if (current !== revision) {
       return;
     }
-    await render(chart, view);
+    const data = await resolve(compiled.data, baseURL);
+    if (current !== revision) {
+      return;
+    }
+    await render(chart, compiled.view, data);
     if (current === revision) {
       error.textContent = "";
     }
