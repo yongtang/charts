@@ -12,19 +12,19 @@
     "test": "prettier --check . && eslint . && playwright test"
   },
   "dependencies": {
-    "@awesome.me/webawesome": "3.12.0",
+    "@awesome.me/webawesome": "3.14.0",
     "codemirror": "6.0.2",
-    "csv-parse": "7.0.2",
+    "csv-parse": "7.0.3",
     "echarts": "6.1.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@playwright/test": "1.63.0",
-    "eslint": "10.10.0",
-    "globals": "17.12.0",
+    "@playwright/test": "1.64.0",
+    "eslint": "10.12.0",
+    "globals": "17.13.0",
     "http-server": "14.1.1",
-    "prettier": "3.9.6",
+    "prettier": "3.9.10",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.70.0"
+    "typescript-eslint": "8.71.2"
   }
 }
